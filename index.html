@@ -488,6 +488,7 @@ body {
   position: relative;
   flex-shrink: 0;
   margin-top: 1px;
+  cursor: pointer;
 }
 
 .item-check input[type="checkbox"] {
@@ -528,6 +529,9 @@ body {
   line-height: 1.4;
   cursor: pointer;
   transition: color var(--transition);
+  display: block;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .item-row.checked .item-text {
@@ -1451,7 +1455,7 @@ body {
 
 <script>
 // ===== CONFIGURACIÓN =====
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwr135ECliCb7K4cjC1EWSyqfjdaXfqbfqsPjCWAp5XTxE4_y16ElyVv91WHgfs2LFAzA/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzg7fAfNxl9Yk-0EuWT1f_9pB3wkw9bwABzvbFmXAh2SfPP2jmnya_TsxJrYv_NFmE0aA/exec';
 const MAX_PHOTOS = 5;
 const AUTOSAVE_KEY = 'winsermant_checklist_v5';
 
@@ -1600,14 +1604,15 @@ function renderSection(sec) {
     row.className = 'item-row';
     row.id = `row_${key}`;
     row.innerHTML = `
-      <label class="item-check">
+      <label class="item-check" for="chk_${key}">
         <input type="checkbox" id="chk_${key}" onchange="toggleItem('${key}')">
-        <div class="check-box" onclick="document.getElementById('chk_${key}').click()">✓</div>
+        <div class="check-box">✓</div>
       </label>
       <div class="item-content">
-        <div class="item-text" onclick="document.getElementById('chk_${key}').click()">${text}</div>
+        <label for="chk_${key}" class="item-text">${text}</label>
         <div class="item-obs">
           <input type="text" placeholder="Observación…" id="obsItem_${key}"
+            onclick="event.stopPropagation()"
             oninput="updateItemObs('${key}', this.value)" value="${state.observations[key]||''}">
         </div>
       </div>
@@ -1655,11 +1660,11 @@ function updateAll() {
     // Badge
     document.getElementById(`badge${sec.id}`).textContent = `${d}/${n}`;
 
-    // Tab dot
+    // Tab dot - verde si tiene fotos, gris si no (no obligatorio por sección)
     const dot = document.getElementById(`dot${sec.id}`);
     if (dot) {
       const hasPhotos = (state.photos[sec.id]||[]).length > 0;
-      dot.className = 'tab-dot ' + (hasPhotos ? 'green' : 'red');
+      dot.className = 'tab-dot ' + (hasPhotos ? 'green' : '');
     }
   });
 
@@ -1721,7 +1726,7 @@ function switchTab(idx) {
   document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', i===idx));
   document.querySelectorAll('.section-panel').forEach((p,i) => p.classList.toggle('active', i===idx));
   activeTab = idx;
-  if (idx === 6) updateSummary(0,0, document.querySelector('input[name="nivel"]:checked')?.value||'1');
+  if (idx === 6) updateAll();
 }
 
 // ===== TECNICOS =====
@@ -1944,12 +1949,12 @@ function validateForm() {
   if (!room) errors.push('Debes seleccionar una sala');
   if (techs.length === 0) errors.push('Debe haber al menos un técnico');
 
+  // Mínimo 3 fotos en total (cualquier sección)
   const activeSections = nivel === '2' ? [0,1,2,3,4,5] : [0,1,2,3,4];
-  activeSections.forEach(idx => {
-    if ((state.photos[idx]||[]).length === 0) {
-      errors.push(`Falta al menos 1 foto en: ${SECTIONS[idx].name.split('&')[0].trim()}`);
-    }
-  });
+  const totalPhotos = activeSections.reduce((sum, idx) => sum + (state.photos[idx]||[]).length, 0);
+  if (totalPhotos < 3) {
+    errors.push(`Se requieren mínimo 3 fotos en total (tienes ${totalPhotos})`);
+  }
 
   return errors;
 }
