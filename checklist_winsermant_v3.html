@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checklist Mantenimiento — Winsermant</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Montserrat', sans-serif; background: #0a0e14; color: #e8eaed; min-height: 100vh; }
+  .header { background: linear-gradient(135deg, #003462 0%, #007bb3 60%, #003462 100%); padding: 22px 28px 18px; display: flex; align-items: center; gap: 16px; border-bottom: 2px solid #007bb3; }
+  .logo-mark { width: 44px; height: 44px; background: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: #003462; letter-spacing: -0.5px; line-height: 1.1; text-align: center; flex-shrink: 0; }
+  .header-text h1 { font-size: 15px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #fff; }
+  .header-text p { font-size: 11px; font-weight: 300; color: rgba(255,255,255,0.7); margin-top: 2px; }
+  .meta-bar { background: #111720; padding: 10px 28px; display: flex; gap: 20px; align-items: center; flex-wrap: wrap; border-bottom: 1px solid #1e2a38; }
+  .meta-field { display: flex; align-items: center; gap: 8px; }
+  .meta-label { font-size: 10px; font-weight: 500; color: #85837d; text-transform: uppercase; letter-spacing: 1px; }
+  .meta-input { background: #1a2333; border: 1px solid #2a3a52; border-radius: 5px; color: #e8eaed; font-family: 'Montserrat', sans-serif; font-size: 11px; padding: 4px 10px; width: 140px; }
+  .meta-select { background: #1a2333; border: 1px solid #2a3a52; border-radius: 5px; color: #e8eaed; font-family: 'Montserrat', sans-serif; font-size: 11px; padding: 4px 10px; }
+  .progress-pill { margin-left: auto; background: #1a2333; border: 1px solid #007bb3; border-radius: 20px; padding: 4px 14px; font-size: 11px; font-weight: 600; color: #007bb3; white-space: nowrap; }
+  .tabs { display: flex; background: #0d1520; border-bottom: 1px solid #1e2a38; padding: 0 28px; overflow-x: auto; }
+  .tab { padding: 12px 18px; font-size: 11px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; cursor: pointer; border: none; background: none; color: #85837d; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; }
+  .tab.active { color: #007bb3; border-bottom-color: #007bb3; }
+  .tab:hover:not(.active) { color: #c0c8d4; }
+  .tab .badge { display: inline-block; background: #1e2a38; border-radius: 10px; padding: 1px 7px; font-size: 9px; margin-left: 6px; color: #85837d; }
+  .tab.active .badge { background: rgba(0,123,179,0.2); color: #007bb3; }
+  .content { padding: 24px 28px; max-width: 860px; }
+  .section { display: none; }
+  .section.visible { display: block; }
+  .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .section-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+  .section-sub { font-size: 11px; color: #85837d; margin-top: 2px; font-weight: 400; }
+  .checklist { display: flex; flex-direction: column; gap: 6px; margin-bottom: 24px; }
+  .check-item { display: flex; align-items: flex-start; gap: 12px; background: #111720; border: 1px solid #1e2a38; border-radius: 8px; padding: 11px 14px; cursor: pointer; transition: all 0.18s; position: relative; overflow: hidden; }
+  .check-item:hover { border-color: #2a3a52; background: #141d2b; }
+  .check-item.checked { border-color: #007bb3; background: rgba(0,123,179,0.07); }
+  .check-item.checked::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: #007bb3; }
+  .checkbox { width: 18px; height: 18px; border: 2px solid #2a3a52; border-radius: 4px; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; transition: all 0.18s; }
+  .check-item.checked .checkbox { background: #007bb3; border-color: #007bb3; }
+  .checkmark { display: none; color: #fff; font-size: 11px; font-weight: 700; }
+  .check-item.checked .checkmark { display: block; }
+  .check-text { flex: 1; }
+  .check-main { font-size: 12px; font-weight: 500; line-height: 1.5; }
+  .check-item.checked .check-main { color: #85837d; text-decoration: line-through; }
+  .check-detail { font-size: 10px; color: #85837d; margin-top: 3px; font-weight: 400; line-height: 1.5; }
+  .obs-field { background: #111720; border: 1px solid #1e2a38; border-radius: 8px; padding: 14px; margin-top: 8px; }
+  .obs-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #85837d; margin-bottom: 8px; }
+  .obs-textarea { width: 100%; background: #0d1520; border: 1px solid #1e2a38; border-radius: 5px; color: #e8eaed; font-family: 'Montserrat', sans-serif; font-size: 11px; padding: 8px 10px; resize: vertical; min-height: 60px; line-height: 1.6; }
+  .obs-textarea:focus { outline: none; border-color: #007bb3; }
+  .divider-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #44515c; margin: 18px 0 10px; display: flex; align-items: center; gap: 10px; }
+  .divider-label::after { content: ''; flex: 1; height: 1px; background: #1e2a38; }
+  .footer-actions { display: flex; gap: 10px; margin-top: 24px; padding-top: 20px; border-top: 1px solid #1e2a38; flex-wrap: wrap; }
+  .btn { padding: 9px 20px; border-radius: 6px; font-family: 'Montserrat', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; cursor: pointer; border: none; transition: all 0.18s; }
+  .btn-primary { background: #007bb3; color: #fff; }
+  .btn-primary:hover { background: #0090d0; }
+  .btn-success { background: #0a7c59; color: #fff; }
+  .btn-success:hover { background: #0d9e70; }
+  .btn-outline { background: transparent; color: #85837d; border: 1px solid #2a3a52; }
+  .btn-outline:hover { border-color: #007bb3; color: #007bb3; }
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-bottom: 20px; }
+  .summary-card { background: #111720; border: 1px solid #1e2a38; border-radius: 8px; padding: 14px 12px; text-align: center; }
+  .summary-num { font-size: 28px; font-weight: 700; color: #007bb3; line-height: 1; }
+  .summary-lbl { font-size: 10px; color: #85837d; margin-top: 5px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+  .progress-bar-wrap { background: #1a2333; border-radius: 20px; height: 6px; margin: 12px 0 4px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #003462, #007bb3); border-radius: 20px; transition: width 0.4s ease; }
+  .progress-text { font-size: 10px; color: #85837d; text-align: right; }
+
+  /* ── FOTOS ── */
+  .foto-field { background: #111720; border: 1px solid #1e2a38; border-radius: 8px; padding: 14px; margin-top: 8px; }
+  .foto-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #85837d; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+  .foto-label span { color: #007bb3; }
+  .foto-upload-btn { display: inline-flex; align-items: center; gap: 8px; background: #1a2333; border: 1px dashed #2a3a52; border-radius: 8px; padding: 10px 16px; cursor: pointer; font-size: 11px; font-weight: 500; color: #85837d; transition: all 0.18s; width: 100%; justify-content: center; }
+  .foto-upload-btn:hover { border-color: #007bb3; color: #007bb3; background: rgba(0,123,179,0.06); }
+  .foto-upload-btn .icon { font-size: 20px; }
+  .foto-input { display: none; }
+  .foto-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; margin-top: 10px; }
+  .foto-thumb { position: relative; border-radius: 6px; overflow: hidden; aspect-ratio: 1; background: #0d1520; border: 1px solid #1e2a38; }
+  .foto-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .foto-thumb .foto-remove { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.7); border: none; border-radius: 50%; width: 20px; height: 20px; color: #fff; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; }
+  .foto-thumb .foto-nombre { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.65); font-size: 8px; padding: 2px 4px; color: #ccc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .foto-count { font-size: 10px; color: #007bb3; font-weight: 600; }
+
+  /* ── MODAL ── */
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:1000; align-items:center; justify-content:center; }
+  .modal-overlay.open { display:flex; }
+  .modal { background:#111720; border:1px solid #1e2a38; border-radius:12px; padding:28px; max-width:460px; width:92%; text-align:center; }
+  .modal-icon { font-size:40px; margin-bottom:12px; }
+  .modal-title { font-size:14px; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+  .modal-msg { font-size:12px; color:#85837d; line-height:1.8; margin-bottom:20px; white-space: pre-line; }
+  .modal-actions { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+  .modal-progress { background:#1a2333; border-radius:20px; height:6px; margin:10px 0; overflow:hidden; }
+  .modal-progress-fill { height:100%; background:linear-gradient(90deg,#003462,#007bb3); border-radius:20px; transition:width 0.3s; }
+  .modal-step { font-size:11px; color:#007bb3; margin-bottom:10px; }
+
+  /* ── BANNER ── */
+  .config-banner { background:#1a1400; border:1px solid #4a3800; border-radius:8px; padding:12px 16px; margin-bottom:16px; font-size:11px; color:#f0c040; display:flex; align-items:flex-start; gap:10px; }
+  .config-banner.hidden { display:none; }
+  .config-banner b { display:block; margin-bottom:4px; font-size:12px; }
+
+  @media (max-width: 600px) {
+    .meta-bar { gap: 12px; padding: 10px 16px; }
+    .content { padding: 16px; }
+    .foto-grid { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); }
+  }
+
+  @media print {
+    body { background:#fff; color:#000; }
+    .header { background:#003462 !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .tabs, .footer-actions, .config-banner, .modal-overlay, .foto-upload-btn, .foto-remove { display:none !important; }
+    .section { display:block !important; margin-bottom:30px; }
+    .check-item { border:1px solid #ccc; background:#fff; }
+    .check-item.checked { background:#f0f8ff; }
+    .obs-textarea { border:1px solid #ccc; background:#fafafa; color:#000; }
+    .foto-thumb { border:1px solid #ccc; }
+  }
+</style>
+</head>
+<body>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-icon" id="modal-icon">📤</div>
+    <div class="modal-title" id="modal-title">Enviando reporte...</div>
+    <div class="modal-step" id="modal-step"></div>
+    <div class="modal-progress" id="modal-prog-wrap" style="display:none"><div class="modal-progress-fill" id="modal-prog" style="width:0%"></div></div>
+    <div class="modal-msg" id="modal-msg">Preparando datos...</div>
+    <div class="modal-actions" id="modal-actions"></div>
+  </div>
+</div>
+
+<div class="header">
+  <div class="logo-mark">WIN<br>SER</div>
+  <div class="header-text">
+    <h1>Checklist de Mantenimiento</h1>
+    <p>Cuartos de Comunicaciones — Winsermant S.A.</p>
+  </div>
+</div>
+
+<div class="meta-bar">
+  <div class="meta-field">
+    <span class="meta-label">Fecha</span>
+    <input type="date" class="meta-input" id="fecha-visita" style="width:130px">
+  </div>
+  <div class="meta-field">
+    <span class="meta-label">Técnico</span>
+    <input type="text" class="meta-input" placeholder="Nombre completo" id="tecnico-nombre">
+  </div>
+  <div class="meta-field">
+    <span class="meta-label">Cuarto</span>
+    <select class="meta-select" id="cuarto-sel">
+      <option value="">— Seleccionar —</option>
+      <option>MDF / Cuarto Principal</option>
+      <option>IDF 1</option><option>IDF 2</option>
+      <option>IDF 3</option><option>IDF 4</option>
+    </select>
+  </div>
+  <div class="meta-field">
+    <span class="meta-label">Nivel</span>
+    <select class="meta-select" id="tipo-visita">
+      <option value="n1">Nivel 1 — Trimestral</option>
+      <option value="n2">Nivel 2 — Semestral</option>
+    </select>
+  </div>
+  <div class="progress-pill" id="prog-pill">0 / 0 completados</div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('fisica',this)">🏗 Infraestructura <span class="badge" id="b-fisica">0</span></button>
+  <button class="tab" onclick="showTab('hvac',this)">🌡 Climatización <span class="badge" id="b-hvac">0</span></button>
+  <button class="tab" onclick="showTab('ups',this)">⚡ UPS/Eléctrico <span class="badge" id="b-ups">0</span></button>
+  <button class="tab" onclick="showTab('red',this)">🌐 Red &amp; Lógica <span class="badge" id="b-red">0</span></button>
+  <button class="tab" onclick="showTab('seguridad',this)">🔒 Seguridad <span class="badge" id="b-seguridad">0</span></button>
+  <button class="tab" onclick="showTab('nivel2',this)">🔧 Nivel 2 <span class="badge" id="b-nivel2">0</span></button>
+  <button class="tab" onclick="showTab('resumen',this)">📋 Resumen</button>
+</div>
+
+<div class="content">
+
+  <div class="config-banner" id="config-banner">
+    ⚙️ <div><b>Configuración pendiente</b>Reemplazá <code>TU_URL_DE_APPS_SCRIPT_AQUI</code> en la línea 1 del bloque script con tu URL de Apps Script.</div>
+  </div>
+
+  <!-- INFRAESTRUCTURA -->
+  <div class="section visible" id="sec-fisica">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(0,123,179,0.15)">🏗</div>
+      <div><div class="section-title">Infraestructura Física &amp; Limpieza</div><div class="section-sub">Periodicidad: Trimestral · Nivel 1</div></div>
+    </div>
+    <div class="checklist" id="list-fisica">
+      <div class="divider-label">Limpieza técnica</div>
+      <div class="check-item" onclick="toggle(this,'fisica')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Aspirado interior de gabinetes y racks</div><div class="check-detail">Usar aspiradora antiestática. Documentar condición inicial con foto.</div></div></div>
+      <div class="check-item" onclick="toggle(this,'fisica')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Limpieza exterior de equipos activos (switches, routers, APs)</div><div class="check-detail">Paño antiestático levemente humedecido. No usar aerosoles directamente.</div></div></div>
+      <div class="divider-label">Gestión de cableado</div>
+      <div class="check-item" onclick="toggle(this,'fisica')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Peinado y organización de patch cords</div><div class="check-detail">Verificar que no haya "nidos de cables". Usar bridas si es necesario.</div></div></div>
+      <div class="check-item" onclick="toggle(this,'fisica')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Verificación de etiquetado de patch cords y puertos</div><div class="check-detail">Reportar etiquetas faltantes, ilegibles o incorrectas.</div></div></div>
+      <div class="check-item" onclick="toggle(this,'fisica')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Inspección de patch cords de fibra óptica</div><div class="check-detail">Verificar conectores limpios, sin dobleces pronunciados ni daño visible.</div></div></div>
+      <div class="divider-label">Rack e infraestructura pasiva</div>
+      <div class="check-item" onclick="toggle(this,'fisica')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Verificación de herrajes y tornillería del rack</div><div class="check-detail">Asegurar que todos los equipos estén correctamente atornillados.</div></div></div>
+      <div class="check-item" onclick="toggle(this,'fisica')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Verificación de anclaje de patch panels</div><div class="check-detail">Confirmar que estén bien asentados y sin movimiento.</div></div></div>
+      <div class="check-item" onclick="toggle(this,'fisica')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Inspección de bandejas y organizadores de cable</div><div class="check-detail">No deben estar sobrecargados ni bloquear ventilación.</div></div></div>
+    </div>
+    <div class="obs-field"><div class="obs-label">Observaciones — Infraestructura física</div><textarea class="obs-textarea" id="obs-fisica" placeholder="Anotar hallazgos, condiciones fuera de lo normal, recomendaciones..."></textarea></div>
+    <div class="foto-field">
+      <div class="foto-label">📷 Fotos — Infraestructura <span class="foto-count" id="fc-fisica">0 fotos</span></div>
+      <label class="foto-upload-btn" for="foto-fisica"><span class="icon">📸</span> Adjuntar fotos / Tomar foto (celular)</label>
+      <input class="foto-input" type="file" id="foto-fisica" accept="image/*" multiple capture="environment" onchange="agregarFotos(this,'fisica')">
+      <div class="foto-grid" id="grid-fisica"></div>
+    </div>
+  </div>
+
+  <!-- CLIMATIZACIÓN -->
+  <div class="section" id="sec-hvac">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(0,164,148,0.15)">🌡</div>
+      <div><div class="section-title">Verificación de Climatización (HVAC)</div><div class="section-sub">Periodicidad: Trimestral · Nivel 1</div></div>
+    </div>
+    <div class="checklist" id="list-hvac">
+      <div class="divider-label">Unidad de aire acondicionado</div>
+      <div class="check-item" onclick="toggle(this,'hvac')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Inspección visual de filtros de aire</div><div class="check-detail">Verificar nivel de suciedad. Reportar si requieren limpieza o reemplazo urgente.</div></div></div>
+      <div class="check-item" onclick="toggle(this,'hvac')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Verificación de bandeja y tubo de drenaje</div><div class="check-detail">Confirmar que no haya taponamiento ni acumulación de agua.</div></div></div>
+      <div class="check-item" onclick="toggle(this,'hvac')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Verificación de funcionamiento general del AC</div><div class="check-detail">Confirmar que la unidad responde a comandos y enfría correctamente.</div></div></div>
+      <div class="divider-label">Control de temperatura y humedad</div>
+      <div class="check-item" onclick="toggle(this,'hvac')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Medición de temperatura del cuarto</div><div class="check-detail">Rango óptimo: 18°C – 24°C. Registrar valor medido en observaciones.</div></div></div>
+      <div class="check-item" onclick="toggle(this,'hvac')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Verificación de humedad relativa</div><div class="check-detail">Rango óptimo: 40–60% HR. Sin condensación visible en superficies.</div></div></div>
+      <div class="check-item" onclick="toggle(this,'hvac')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Verificación de sellos y cierre del cuarto</div><div class="check-detail">Puerta y rendijas bien selladas para mantener temperatura estable.</div></div></div>
+    </div>
+    <div class="obs-field"><div class="obs-label">Observaciones — Climatización</div><textarea class="obs-textarea" id="obs-hvac" placeholder="Temperatura registrada: ___°C / Humedad: ___% / Observaciones adicionales..."></textarea></div>
+    <div class="foto-field">
+      <div class="foto-label">📷 Fotos — Climatización <span class="foto-count" id="fc-hvac">0 fotos</span></div>
+      <label class="foto-upload-btn" for="foto-hvac"><span class="icon">📸</span> Adjuntar fotos / Tomar foto (celular)</label>
+      <input class="foto-input" type="file" id="foto-hvac" accept="image/*" multiple capture="environment" onchange="agregarFotos(this,'hvac')">
+      <div class="foto-grid" id="grid-hvac"></div>
+    </div>
+  </div>
+
+  <!-- UPS -->
+  <div class="section" id="sec-ups">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(255,180,0,0.12)">⚡</div>
+      <div><div class="section-title">Verificación de Respaldo Eléctrico (UPS)</div><div class="section-sub">Periodicidad: Trimestral · Nivel 1</div></div>
+    </div>
+    <div class="checklist" id="list-ups">
+      <div class="divider-label">Pruebas funcionales</div>
+      <div class="check-item" onclick="toggle(this,'ups')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Verificación de indicadores LED / panel frontal del UPS</div><div class="check-detail">Confirmar que no haya alarmas activas o códigos de error.</div></div></div>
+      <div class="check-item" onclick="toggle(this,'ups')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Prueba de carga — verificación de autonomía</div><div class="check-detail">Coordinar con encargados antes de ejecutar. Registrar tiempo de autonomía.</div></div></div>
+      <div class="check-item" onclick="toggle(this,'ups')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Verificación de tiempo de autonomía estimado</div><div class="check-detail">Registrar tiempo en minutos según pantalla del UPS.</div></div></div>
+      <div class="divider-label">Inspección física de baterías</div>
+      <div class="check-item" onclick="toggle(this,'ups')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Inspección visual de baterías (hinchazón, corrosión, fugas)</div><div class="check-detail">Documentar con foto si hay hallazgo crítico.</div></div></div>
+      <div class="check-item" onclick="toggle(this,'ups')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Limpieza y apriete de bornes de conexión</div><div class="check-detail">Limpiar con spray de contacto si hay oxidación. Verificar torque.</div></div></div>
+      <div class="divider-label">Tierra física (TGB)</div>
+      <div class="check-item" onclick="toggle(this,'ups')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Verificación visual de conexiones a tierra (TGB)</div><div class="check-detail">Confirmar que el bus de tierra esté conectado y sin corrosión.</div></div></div>
+      <div class="check-item" onclick="toggle(this,'ups')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Verificación de PDU y distribución eléctrica del rack</div><div class="check-detail">Confirmar que no hay sobrecargas ni outlets dañados.</div></div></div>
+    </div>
+    <div class="obs-field"><div class="obs-label">Observaciones — UPS / Eléctrico</div><textarea class="obs-textarea" id="obs-ups" placeholder="Autonomía registrada: ___ min / Estado baterías: OK / Advertencia / Crítico..."></textarea></div>
+    <div class="foto-field">
+      <div class="foto-label">📷 Fotos — UPS / Eléctrico <span class="foto-count" id="fc-ups">0 fotos</span></div>
+      <label class="foto-upload-btn" for="foto-ups"><span class="icon">📸</span> Adjuntar fotos / Tomar foto (celular)</label>
+      <input class="foto-input" type="file" id="foto-ups" accept="image/*" multiple capture="environment" onchange="agregarFotos(this,'ups')">
+      <div class="foto-grid" id="grid-ups"></div>
+    </div>
+  </div>
+
+  <!-- RED -->
+  <div class="section" id="sec-red">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(0,123,179,0.15)">🌐</div>
+      <div><div class="section-title">Verificación de Equipo de Red &amp; Lógica</div><div class="section-sub">Periodicidad: Trimestral · Nivel 1 — Inspección visual únicamente</div></div>
+    </div>
+    <div class="checklist" id="list-red">
+      <div class="divider-label">Estado operativo (inspección visual)</div>
+      <div class="check-item" onclick="toggle(this,'red')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Verificación de LEDs de switches</div><div class="check-detail">Confirmar que no haya puertos en fault (LED rojo o ámbar sostenido).</div></div></div>
+      <div class="check-item" onclick="toggle(this,'red')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Verificación de LEDs de routers y firewalls</div><div class="check-detail">Estado "Up" en interfaces principales. Reportar cualquier alarma visible.</div></div></div>
+      <div class="check-item" onclick="toggle(this,'red')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Verificación de Access Points (LEDs de estado y actividad)</div><div class="check-detail">Confirmar que todos los APs identificados estén operando. Registrar cantidad.</div></div></div>
+      <div class="check-item" onclick="toggle(this,'red')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Verificación de módulos SFP/SFP+ en switches core</div><div class="check-detail">Confirmar que los módulos de uplink estén asentados y sin alarma de enlace.</div></div></div>
+      <div class="check-item" onclick="toggle(this,'red')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Inventario rápido de equipos presentes en rack</div><div class="check-detail">Confirmar que coincida con inventario previo. Reportar diferencias.</div></div></div>
+    </div>
+    <div class="obs-field"><div class="obs-label">Observaciones — Red &amp; Lógica</div><textarea class="obs-textarea" id="obs-red" placeholder="Equipos sin señal: / Alarmas activas: / Equipos no identificados: ..."></textarea></div>
+    <div class="foto-field">
+      <div class="foto-label">📷 Fotos — Red &amp; Lógica <span class="foto-count" id="fc-red">0 fotos</span></div>
+      <label class="foto-upload-btn" for="foto-red"><span class="icon">📸</span> Adjuntar fotos / Tomar foto (celular)</label>
+      <input class="foto-input" type="file" id="foto-red" accept="image/*" multiple capture="environment" onchange="agregarFotos(this,'red')">
+      <div class="foto-grid" id="grid-red"></div>
+    </div>
+  </div>
+
+  <!-- SEGURIDAD -->
+  <div class="section" id="sec-seguridad">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(200,60,60,0.12)">🔒</div>
+      <div><div class="section-title">Verificación de Seguridad &amp; Entorno</div><div class="section-sub">Periodicidad: Trimestral · Nivel 1</div></div>
+    </div>
+    <div class="checklist" id="list-seguridad">
+      <div class="divider-label">Control de acceso</div>
+      <div class="check-item" onclick="toggle(this,'seguridad')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Verificación de cerradura o control biométrico de la puerta</div><div class="check-detail">Confirmar que el mecanismo de cierre funcione correctamente.</div></div></div>
+      <div class="check-item" onclick="toggle(this,'seguridad')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Verificación de registro/bitácora de acceso</div><div class="check-detail">Asegurar que existe un registro de quién ingresa al cuarto.</div></div></div>
+      <div class="divider-label">Detección y extinción de incendios</div>
+      <div class="check-item" onclick="toggle(this,'seguridad')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Verificación de sensor de humo (LED de estado activo)</div><div class="check-detail">Confirmar que esté operativo y dentro de fecha de vigencia.</div></div></div>
+      <div class="check-item" onclick="toggle(this,'seguridad')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Inspección de extintor — CO₂ o agente limpio (NUNCA polvo químico)</div><div class="check-detail">Verificar carga, fecha de vencimiento y accesibilidad.</div></div></div>
+      <div class="divider-label">Iluminación y entorno general</div>
+      <div class="check-item" onclick="toggle(this,'seguridad')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Verificación de iluminación del cuarto</div><div class="check-detail">Los técnicos deben poder ver claramente durante intervenciones.</div></div></div>
+      <div class="check-item" onclick="toggle(this,'seguridad')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Verificación de cámaras CCTV (si aplica)</div><div class="check-detail">Confirmar operatividad e imagen activa. Reportar oportunidades de mejora.</div></div></div>
+      <div class="check-item" onclick="toggle(this,'seguridad')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Verificación de orden general del cuarto</div><div class="check-detail">No debe haber cajas, materiales ni objetos extraños almacenados adentro.</div></div></div>
+    </div>
+    <div class="obs-field"><div class="obs-label">Observaciones — Seguridad &amp; Entorno</div><textarea class="obs-textarea" id="obs-seguridad" placeholder="Extintor vence: ___ / Sensor humo: OK / Cámaras operativas: ___/___..."></textarea></div>
+    <div class="foto-field">
+      <div class="foto-label">📷 Fotos — Seguridad <span class="foto-count" id="fc-seguridad">0 fotos</span></div>
+      <label class="foto-upload-btn" for="foto-seguridad"><span class="icon">📸</span> Adjuntar fotos / Tomar foto (celular)</label>
+      <input class="foto-input" type="file" id="foto-seguridad" accept="image/*" multiple capture="environment" onchange="agregarFotos(this,'seguridad')">
+      <div class="foto-grid" id="grid-seguridad"></div>
+    </div>
+  </div>
+
+  <!-- NIVEL 2 -->
+  <div class="section" id="sec-nivel2">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(100,60,180,0.15)">🔧</div>
+      <div><div class="section-title">Servicios Complementarios — Nivel 2</div><div class="section-sub">Periodicidad: Semestral · Tareas especializadas adicionales</div></div>
+    </div>
+    <div class="checklist" id="list-nivel2">
+      <div class="divider-label">Limpieza exhaustiva de equipo activo</div>
+      <div class="check-item" onclick="toggle(this,'nivel2')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Verificación de periodos de garantía de equipos activos</div><div class="check-detail">Confirmar si los equipos pueden ser abiertos para limpieza interna.</div></div></div>
+      <div class="check-item" onclick="toggle(this,'nivel2')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Coordinación y autorización de "Shutdown" con encargados del cliente</div><div class="check-detail">Obtener aprobación antes de apagar cualquier equipo activo.</div></div></div>
+      <div class="check-item" onclick="toggle(this,'nivel2')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Limpieza interna de switches y routers (si autorizado)</div><div class="check-detail">Usar aire comprimido seco, herramienta antiestática. Documentar antes/después.</div></div></div>
+      <div class="divider-label">Certificación de puntos críticos — Access Points (Fluke)</div>
+      <div class="check-item" onclick="toggle(this,'nivel2')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Pruebas de canal con equipo Fluke en puntos de red de APs</div><div class="check-detail">Verificar cumplimiento de categoría instalada (Cat5e / Cat6 / Cat6A).</div></div></div>
+      <div class="check-item" onclick="toggle(this,'nivel2')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Pruebas de enlace (Link Test) en puntos críticos</div><div class="check-detail">Registrar resultados PASS/FAIL por punto. Adjuntar reporte Fluke.</div></div></div>
+      <div class="divider-label">Planta externa — Arquetas y canalizaciones</div>
+      <div class="check-item" onclick="toggle(this,'nivel2')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Recorrido de planta externa e inspección de arquetas</div><div class="check-detail">Verificar tapas, estado general y accesibilidad de cada registro.</div></div></div>
+      <div class="check-item" onclick="toggle(this,'nivel2')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Verificación de segregación de medios en canalización</div><div class="check-detail">Las tuberías de red no deben contener cableado eléctrico u otros servicios.</div></div></div>
+      <div class="check-item" onclick="toggle(this,'nivel2')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Verificación de espuma expansiva en bocas de tubería</div><div class="check-detail">Las entradas deben estar selladas contra agua y roedores.</div></div></div>
+      <div class="check-item" onclick="toggle(this,'nivel2')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Inspección de filtraciones, grietas y nidos en arquetas</div><div class="check-detail">Documentar con foto cualquier hallazgo. Reportar al encargado.</div></div></div>
+      <div class="check-item" onclick="toggle(this,'nivel2')"><div class="checkbox"><span class="checkmark">✓</span></div><div class="check-text"><div class="check-main">Limpieza y ordenamiento de cableado dentro de arquetas</div><div class="check-detail">Retirar escombros, amarrar cables, verificar integridad de fibra óptica.</div></div></div>
+    </div>
+    <div class="obs-field"><div class="obs-label">Observaciones — Nivel 2</div><textarea class="obs-textarea" id="obs-nivel2" placeholder="Resultados Fluke adjuntos: Sí/No / Arquetas inspeccionadas: ___/total..."></textarea></div>
+    <div class="foto-field">
+      <div class="foto-label">📷 Fotos — Nivel 2 <span class="foto-count" id="fc-nivel2">0 fotos</span></div>
+      <label class="foto-upload-btn" for="foto-nivel2"><span class="icon">📸</span> Adjuntar fotos / Tomar foto (celular)</label>
+      <input class="foto-input" type="file" id="foto-nivel2" accept="image/*" multiple capture="environment" onchange="agregarFotos(this,'nivel2')">
+      <div class="foto-grid" id="grid-nivel2"></div>
+    </div>
+  </div>
+
+  <!-- RESUMEN -->
+  <div class="section" id="sec-resumen">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(0,123,179,0.15)">📋</div>
+      <div><div class="section-title">Resumen de la Visita</div><div class="section-sub">Estado global del checklist</div></div>
+    </div>
+    <div class="summary-grid" id="summary-grid"></div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="global-bar" style="width:0%"></div></div>
+    <div class="progress-text" id="global-text">0% completado</div>
+    <div class="obs-field" style="margin-top:20px">
+      <div class="obs-label">Conclusión general de la visita</div>
+      <textarea class="obs-textarea" id="obs-conclusion" style="min-height:80px" placeholder="Condición general, principales hallazgos, acciones recomendadas, adicionales requeridos..."></textarea>
+    </div>
+    <div class="obs-field" style="margin-top:10px">
+      <div class="obs-label">Firma del técnico — Winsermant</div>
+      <input type="text" class="meta-input" id="firma-tecnico" style="width:100%;margin-top:4px" placeholder="Nombre completo del técnico responsable">
+    </div>
+    <div class="obs-field" style="margin-top:10px">
+      <div class="obs-label">Firma de conformidad — Encargado del cliente</div>
+      <input type="text" class="meta-input" id="firma-cliente" style="width:100%;margin-top:4px" placeholder="Nombre del encargado que recibe el trabajo">
+    </div>
+    <!-- resumen de fotos -->
+    <div class="obs-field" style="margin-top:10px" id="resumen-fotos-box">
+      <div class="obs-label">📷 Fotos adjuntas por sección <span class="foto-count" id="total-fotos-label">0 fotos en total</span></div>
+      <div id="resumen-fotos" style="margin-top:8px;font-size:11px;color:#85837d;line-height:2"></div>
+    </div>
+  </div>
+
+  <div class="footer-actions">
+    <button class="btn btn-success" onclick="enviarReporte()">📤 Enviar a Google Sheets + Drive</button>
+    <button class="btn btn-primary" onclick="window.print()">🖨 Imprimir / PDF</button>
+    <button class="btn btn-outline" onclick="resetAll()">↺ Nueva visita</button>
+  </div>
+</div>
+
+<script>
+  // ╔══════════════════════════════════════════════════╗
+  // ║  PEGÁ AQUÍ TU URL DE APPS SCRIPT                ║
+  // ╚══════════════════════════════════════════════════╝
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxdvqt3rRMA52_GCAGHP5ssViqmAGr_i-jW8I1FRmVpuy-IIItvjVMwDoYhoJo9b1jTtw/exec';
+
+  if (APPS_SCRIPT_URL !== 'TU_URL_DE_APPS_SCRIPT_AQUI') {
+    document.getElementById('config-banner').classList.add('hidden');
+  }
+
+  // ── ESTADO DE FOTOS: { seccion: [{nombre, base64, size}] }
+  const fotosData = { fisica:[], hvac:[], ups:[], red:[], seguridad:[], nivel2:[] };
+
+  const sections = ['fisica','hvac','ups','red','seguridad','nivel2'];
+  const counts = {}; const totals = {};
+  sections.forEach(s => { counts[s] = 0; totals[s] = document.querySelectorAll('#list-'+s+' .check-item').length; });
+
+  // ── TOGGLE CHECKLIST
+  function toggle(el, section) { el.classList.toggle('checked'); updateCounts(); }
+
+  function updateCounts() {
+    let total = 0, done = 0;
+    sections.forEach(s => {
+      const all = document.querySelectorAll('#list-'+s+' .check-item').length;
+      const chk = document.querySelectorAll('#list-'+s+' .check-item.checked').length;
+      counts[s] = chk;
+      document.getElementById('b-'+s).textContent = chk+'/'+all;
+      total += all; done += chk;
+    });
+    document.getElementById('prog-pill').textContent = done+' / '+total+' completados';
+    updateSummary(total, done);
+  }
+
+  function updateSummary(total, done) {
+    const pct = total > 0 ? Math.round((done/total)*100) : 0;
+    document.getElementById('global-bar').style.width = pct+'%';
+    document.getElementById('global-text').textContent = pct+'% completado';
+    const names = {fisica:'🏗 Infraestructura',hvac:'🌡 Climatización',ups:'⚡ UPS',red:'🌐 Red',seguridad:'🔒 Seguridad',nivel2:'🔧 Nivel 2'};
+    document.getElementById('summary-grid').innerHTML = sections.map(s =>
+      '<div class="summary-card"><div class="summary-num">'+counts[s]+'/'+totals[s]+'</div><div class="summary-lbl">'+names[s]+'</div></div>'
+    ).join('') + '<div class="summary-card" style="border-color:#007bb3"><div class="summary-num" style="color:#007bb3">'+pct+'%</div><div class="summary-lbl">✅ Global</div></div>';
+    // resumen fotos
+    const totalFotos = sections.reduce((a,s)=>a+fotosData[s].length,0);
+    document.getElementById('total-fotos-label').textContent = totalFotos+' fotos en total';
+    document.getElementById('resumen-fotos').innerHTML = sections.map(s =>
+      fotosData[s].length > 0 ? '<b>'+names[s]+':</b> '+fotosData[s].length+' foto(s)<br>' : ''
+    ).join('');
+  }
+
+  function showTab(sec, btn) {
+    sections.forEach(s => document.getElementById('sec-'+s).classList.remove('visible'));
+    document.getElementById('sec-resumen').classList.remove('visible');
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    if (sec === 'resumen') {
+      document.getElementById('sec-resumen').classList.add('visible');
+      updateSummary(sections.reduce((a,s)=>a+totals[s],0), sections.reduce((a,s)=>a+counts[s],0));
+    } else { document.getElementById('sec-'+sec).classList.add('visible'); }
+    btn.classList.add('active');
+  }
+
+  // ── MANEJO DE FOTOS
+  function agregarFotos(input, seccion) {
+    const files = Array.from(input.files);
+    files.forEach(file => {
+      // máx 5 fotos por sección
+      if (fotosData[seccion].length >= 5) {
+        alert('Máximo 5 fotos por sección.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        // comprimir a max 800px para no sobrecargar el envío
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          const MAX = 800;
+          let w = img.width, h = img.height;
+          if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+          if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          const b64 = canvas.toDataURL('image/jpeg', 0.75);
+          fotosData[seccion].push({ nombre: file.name, base64: b64 });
+          renderFotos(seccion);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+    input.value = ''; // limpiar para permitir reselección
+  }
+
+  function renderFotos(seccion) {
+    const grid = document.getElementById('grid-'+seccion);
+    const fc   = document.getElementById('fc-'+seccion);
+    grid.innerHTML = fotosData[seccion].map((f, i) =>
+      '<div class="foto-thumb">' +
+        '<img src="'+f.base64+'" alt="'+f.nombre+'">' +
+        '<button class="foto-remove" onclick="eliminarFoto(\''+seccion+'\','+i+')">✕</button>' +
+        '<div class="foto-nombre">'+f.nombre+'</div>' +
+      '</div>'
+    ).join('');
+    fc.textContent = fotosData[seccion].length + ' foto(s)';
+  }
+
+  function eliminarFoto(seccion, idx) {
+    fotosData[seccion].splice(idx, 1);
+    renderFotos(seccion);
+  }
+
+  // ── RESET
+  function resetAll() {
+    if (!confirm('¿Iniciar una nueva visita? Se borrarán todos los checks y fotos.')) return;
+    document.querySelectorAll('.check-item').forEach(el => el.classList.remove('checked'));
+    document.querySelectorAll('.obs-textarea').forEach(el => el.value = '');
+    document.querySelectorAll('.meta-input').forEach(el => el.value = '');
+    sections.forEach(s => { counts[s] = 0; fotosData[s] = []; renderFotos(s); });
+    updateCounts();
+    document.getElementById('fecha-visita').value = new Date().toISOString().split('T')[0];
+  }
+
+  // ── RECOLECTAR ÍTEMS
+  function recolectarItems(seccion) {
+    const items = document.querySelectorAll('#list-'+seccion+' .check-item');
+    let ok = [], pend = [];
+    items.forEach(item => {
+      const t = item.querySelector('.check-main').textContent.trim();
+      item.classList.contains('checked') ? ok.push(t) : pend.push(t);
+    });
+    return { completados: ok.join(' | '), pendientes: pend.join(' | ') };
+  }
+
+  // ── ENVIAR REPORTE
+  async function enviarReporte() {
+    const tecnico = document.getElementById('tecnico-nombre').value.trim();
+    const cuarto  = document.getElementById('cuarto-sel').value;
+    const fecha   = document.getElementById('fecha-visita').value;
+    if (!tecnico || !cuarto || !fecha) {
+      alert('⚠️ Completá los campos: Fecha, Técnico y Cuarto antes de enviar.');
+      return;
+    }
+    if (APPS_SCRIPT_URL === 'TU_URL_DE_APPS_SCRIPT_AQUI') {
+      alert('⚙️ Configuración pendiente: reemplazá TU_URL_DE_APPS_SCRIPT_AQUI con tu URL de Apps Script.');
+      return;
+    }
+
+    const totalFotos = sections.reduce((a,s)=>a+fotosData[s].length,0);
+    const totalItems = sections.reduce((a,s)=>a+totals[s],0);
+    const doneItems  = sections.reduce((a,s)=>a+counts[s],0);
+
+    // Modal de progreso
+    document.getElementById('modal-prog-wrap').style.display = 'block';
+    setModal('📤','Enviando reporte...','Preparando datos del checklist...','');
+    setProgreso(10, 'Paso 1/3 — Empaquetando datos...');
+    document.getElementById('modal').classList.add('open');
+
+    const payload = {
+      fecha, tecnico, cuarto,
+      nivel: document.getElementById('tipo-visita').options[document.getElementById('tipo-visita').selectedIndex].text,
+      porcentaje: Math.round((doneItems/totalItems)*100)+'%',
+      completados_total: doneItems, items_total: totalItems,
+      fisica_ok:      recolectarItems('fisica').completados,
+      fisica_pend:    recolectarItems('fisica').pendientes,
+      obs_fisica:     document.getElementById('obs-fisica').value,
+      hvac_ok:        recolectarItems('hvac').completados,
+      hvac_pend:      recolectarItems('hvac').pendientes,
+      obs_hvac:       document.getElementById('obs-hvac').value,
+      ups_ok:         recolectarItems('ups').completados,
+      ups_pend:       recolectarItems('ups').pendientes,
+      obs_ups:        document.getElementById('obs-ups').value,
+      red_ok:         recolectarItems('red').completados,
+      red_pend:       recolectarItems('red').pendientes,
+      obs_red:        document.getElementById('obs-red').value,
+      seguridad_ok:   recolectarItems('seguridad').completados,
+      seguridad_pend: recolectarItems('seguridad').pendientes,
+      obs_seguridad:  document.getElementById('obs-seguridad').value,
+      nivel2_ok:      recolectarItems('nivel2').completados,
+      nivel2_pend:    recolectarItems('nivel2').pendientes,
+      obs_nivel2:     document.getElementById('obs-nivel2').value,
+      conclusion:     document.getElementById('obs-conclusion').value,
+      firma_tecnico:  document.getElementById('firma-tecnico').value,
+      firma_cliente:  document.getElementById('firma-cliente').value,
+      fotos_resumen:  sections.map(s => s+': '+fotosData[s].length+' foto(s)').join(' | '),
+      fotos: {}
+    };
+
+    // Adjuntar fotos como base64 por sección
+    sections.forEach(s => {
+      if (fotosData[s].length > 0) {
+        payload.fotos[s] = fotosData[s].map(f => ({ nombre: f.nombre, data: f.base64 }));
+      }
+    });
+
+    setProgreso(40, 'Paso 2/3 — Enviando a Google Sheets y Drive...');
+    document.getElementById('modal-msg').textContent = totalFotos > 0
+      ? 'Enviando checklist + '+totalFotos+' foto(s). Esto puede tardar unos segundos...'
+      : 'Enviando checklist a Google Sheets...';
+
+    try {
+      await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        mode:   'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      setProgreso(100, 'Paso 3/3 — ¡Completado!');
+      setTimeout(() => {
+        setModal('✅','¡Reporte enviado!',
+          'Checklist guardado en Google Sheets.\n' +
+          (totalFotos > 0 ? totalFotos+' foto(s) subidas a Google Drive.\n' : '') +
+          '\nPodés ver el registro completo en tu Drive.',
+          '<button class="btn btn-success" onclick="cerrarModal()">Cerrar</button>' +
+          '<button class="btn btn-outline" onclick="cerrarModal();window.print()">Imprimir también</button>');
+        document.getElementById('modal-prog-wrap').style.display = 'none';
+        document.getElementById('modal-step').textContent = '';
+      }, 600);
+    } catch(err) {
+      setModal('❌','Error al enviar',
+        'No se pudo conectar. Verificá tu internet y que la URL de Apps Script sea correcta.\n\nError: '+err.message,
+        '<button class="btn btn-primary" onclick="cerrarModal()">Cerrar</button>');
+      document.getElementById('modal-prog-wrap').style.display = 'none';
+    }
+  }
+
+  function setProgreso(pct, paso) {
+    document.getElementById('modal-prog').style.width = pct+'%';
+    document.getElementById('modal-step').textContent = paso;
+  }
+
+  function setModal(icon, title, msg, actions) {
+    document.getElementById('modal-icon').textContent  = icon;
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-msg').textContent   = msg;
+    document.getElementById('modal-actions').innerHTML = actions;
+  }
+
+  function cerrarModal() {
+    document.getElementById('modal').classList.remove('open');
+  }
+
+  document.getElementById('fecha-visita').value = new Date().toISOString().split('T')[0];
+  updateCounts();
+</script>
+</body>
+</html>
