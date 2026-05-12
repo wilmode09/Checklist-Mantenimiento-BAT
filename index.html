@@ -1056,7 +1056,7 @@ body {
 <body>
 
 <!-- CONFIG BANNER -->
-<div class="config-banner" id="configBanner">
+<div class="config-banner hidden" id="configBanner">
   ⚠️ <span><strong>Configuración requerida:</strong> Reemplaza <code>TU_URL_DE_APPS_SCRIPT_AQUI</code> con tu URL de Google Apps Script.</span>
 </div>
 
@@ -1451,7 +1451,7 @@ body {
 
 <script>
 // ===== CONFIGURACIÓN =====
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx0fUF8LhgCILEfV07wZXlS22hdBE4vrsVPhzSXwIR3wHE6o9_Jq97xI6Pzq0jEdQf3zw/exec';
+const APPS_SCRIPT_URL = 'TU_URL_DE_APPS_SCRIPT_AQUI';
 const MAX_PHOTOS = 5;
 const AUTOSAVE_KEY = 'winsermant_checklist_v5';
 
@@ -1572,9 +1572,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // Cargar autosave
   loadAutoSave();
 
-  // Config banner
+  // Config banner: mostrar solo si falta URL
   if (APPS_SCRIPT_URL === 'TU_URL_DE_APPS_SCRIPT_AQUI') {
     document.getElementById('configBanner').classList.remove('hidden');
+  } else {
+    document.getElementById('configBanner').classList.add('hidden');
   }
 
   // Eventos
